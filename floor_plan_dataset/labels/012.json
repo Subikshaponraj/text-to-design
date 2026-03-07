@@ -1,0 +1,65 @@
+  {
+    "layout_id": "plan_012",
+    "image_file": "1770698095007_011.jpg",
+    "total_area": 69.76,
+    "layout_type": "upper_floor",
+    "dimensions": {
+      "width": 10.8,
+      "height": 11
+    },
+    "rooms": [
+      {
+        "type": "bedroom",
+        "area": 10.74,
+        "label": "CH.1"
+      },
+      {
+        "type": "bathroom",
+        "area": 6.97,
+        "label": "BAINS"
+      },
+      {
+        "type": "wc",
+        "area": 1.44,
+        "label": "WC."
+      },
+      {
+        "type": "bedroom",
+        "area": 11.62,
+        "label": "CH.3"
+      },
+      {
+        "type": "hallway",
+        "area": 4.04,
+        "label": "DEGT."
+      },
+      {
+        "type": "bedroom",
+        "area": 9.1,
+        "label": "CH.2"
+      },
+      {
+        "type": "closet",
+        "label": "PL."
+      },
+      {
+        "type": "hallway",
+        "area": 6.41,
+        "label": "HALL"
+      },
+      {
+        "type": "living_room",
+        "area": 30.58,
+        "label": "SEJOUR"
+      },
+      {
+        "type": "kitchen",
+        "area": 11.83,
+        "label": "CUISINE"
+      }
+    ],
+    "metadata": {
+      "floor_level": "upper",
+      "plan_type": "Plan RDC"
+    }
+  }

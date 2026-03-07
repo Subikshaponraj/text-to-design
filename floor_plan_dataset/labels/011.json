@@ -1,0 +1,63 @@
+  {
+    "layout_id": "plan_011",
+    "image_file": "1770698095006_010.jpg",
+    "total_area": 60.45,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 9.1,
+      "height": 10
+    },
+    "rooms": [
+      {
+        "type": "shelter",
+        "label": "ABRI"
+      },
+      {
+        "type": "garage",
+        "label": "GARAGE"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.06,
+        "label": "CHAMBRE 1"
+      },
+      {
+        "type": "bathroom",
+        "area": 5.49,
+        "label": "BAINS"
+      },
+      {
+        "type": "hallway",
+        "area": 1.53,
+        "label": "Pl."
+      },
+      {
+        "type": "wc",
+        "area": 1.32,
+        "label": "WC"
+      },
+      {
+        "type": "storage",
+        "area": 4.34,
+        "label": "CELLIER"
+      },
+      {
+        "type": "closet",
+        "area": 1.67,
+        "label": "Pl."
+      },
+      {
+        "type": "kitchen",
+        "area": 10.78,
+        "label": "CUSINE"
+      },
+      {
+        "type": "living_room",
+        "area": 27.88,
+        "label": "SEJOUR"
+      }
+    ],
+    "metadata": {
+      "compact_design": true
+    }
+  }

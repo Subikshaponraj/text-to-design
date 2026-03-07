@@ -1,0 +1,76 @@
+  {
+    "layout_id": "plan_015",
+    "image_file": "1770698095009_015.jpg",
+    "total_area": 162.64,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 16.75,
+      "height": 15.4
+    },
+    "rooms": [
+      {
+        "type": "garage",
+        "area": 53.99,
+        "label": "GARAGE"
+      },
+      {
+        "type": "bedroom",
+        "area": 13.18,
+        "label": "CHAMBRE 1"
+      },
+      {
+        "type": "bathroom",
+        "area": 5.32,
+        "label": "BAINS"
+      },
+      {
+        "type": "wc",
+        "area": 1.86,
+        "label": "WC"
+      },
+      {
+        "type": "hallway",
+        "area": 3.22,
+        "label": "HALL"
+      },
+      {
+        "type": "entrance",
+        "label": "PORCHE"
+      },
+      {
+        "type": "storage",
+        "area": 5.35,
+        "label": "CELLIER"
+      },
+      {
+        "type": "kitchen",
+        "area": 15.11,
+        "label": "CUISINE"
+      },
+      {
+        "type": "bedroom",
+        "area": 12.47,
+        "label": "CHAMBRE 2"
+      },
+      {
+        "type": "bedroom",
+        "area": 13.41,
+        "label": "CHAMBRE 3"
+      },
+      {
+        "type": "living_room",
+        "area": 39.53,
+        "label": "SEJOUR",
+        "ceiling_height": 2.6
+      },
+      {
+        "type": "covered_terrace",
+        "area": 11.88,
+        "label": "TERRASSE COUVERTE"
+      }
+    ],
+    "metadata": {
+      "has_large_garage": true,
+      "high_ceiling_living_room": true
+    }
+  }

@@ -1,0 +1,166 @@
+{
+  "description": "Compact 1BHK studio",
+  "layout_spec": {
+    "layout_type": "apartment",
+    "rooms": [
+      {
+        "type": "living_room",
+        "label": "Living Room",
+        "width": 12.8,
+        "height": 10.2,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "doors": [
+          {
+            "x": 0,
+            "y": 5.1,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 6.4,
+            "y": 10.2,
+            "width": 4.0,
+            "height": 4.0,
+            "wall_side": "top"
+          }
+        ]
+      },
+      {
+        "type": "kitchen",
+        "label": "Kitchen",
+        "width": 8.5,
+        "height": 6.8,
+        "position": {
+          "x": 0,
+          "y": 10.7
+        },
+        "doors": [
+          {
+            "x": 0,
+            "y": 14.1,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 8.5,
+            "y": 14.1,
+            "width": 3.0,
+            "height": 3.0,
+            "wall_side": "right"
+          }
+        ]
+      },
+      {
+        "type": "master_bedroom",
+        "label": "Master Bedroom",
+        "width": 11.9,
+        "height": 10.2,
+        "position": {
+          "x": 0,
+          "y": 18.0
+        },
+        "doors": [
+          {
+            "x": 0,
+            "y": 23.1,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 6.0,
+            "y": 28.2,
+            "width": 4.0,
+            "height": 4.0,
+            "wall_side": "top"
+          }
+        ]
+      },
+      {
+        "type": "bathroom",
+        "label": "Bathroom 1",
+        "width": 6.0,
+        "height": 4.2,
+        "position": {
+          "x": 12.4,
+          "y": 18.0
+        },
+        "doors": [
+          {
+            "x": 12.4,
+            "y": 20.1,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 15.4,
+            "y": 22.2,
+            "width": 2.0,
+            "height": 2.0,
+            "wall_side": "top"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "description": "compact 1bhk studio",
+      "is_open_kitchen": false,
+      "is_compact": true
+    }
+  },
+  "output_files": {
+    "png": "./geometric_outputs\\Compact_1BHK_studio.png",
+    "dxf": "./geometric_outputs\\Compact_1BHK_studio.dxf",
+    "svg": "./geometric_outputs\\Compact_1BHK_studio.svg",
+    "json": "./geometric_outputs\\layout_specification.json"
+  },
+  "statistics": {
+    "total_rooms": 4,
+    "total_area_sqft": 334.94,
+    "total_walls": 16,
+    "room_breakdown": [
+      {
+        "label": "Living Room",
+        "type": "living_room",
+        "width_ft": 12.8,
+        "height_ft": 10.2,
+        "area_sqft": 130.56
+      },
+      {
+        "label": "Kitchen",
+        "type": "kitchen",
+        "width_ft": 8.5,
+        "height_ft": 6.8,
+        "area_sqft": 57.8
+      },
+      {
+        "label": "Master Bedroom",
+        "type": "master_bedroom",
+        "width_ft": 11.9,
+        "height_ft": 10.2,
+        "area_sqft": 121.38
+      },
+      {
+        "label": "Bathroom 1",
+        "type": "bathroom",
+        "width_ft": 6.0,
+        "height_ft": 4.2,
+        "area_sqft": 25.200000000000003
+      }
+    ]
+  }
+}

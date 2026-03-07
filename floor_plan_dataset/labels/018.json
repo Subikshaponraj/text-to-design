@@ -1,0 +1,78 @@
+  {
+    "layout_id": "plan_018",
+    "image_file": "1770698095010_018.jpg",
+    "total_area": 120.75,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 14.35,
+      "height": 11.5
+    },
+    "rooms": [
+      {
+        "type": "garage",
+        "area": 24.86,
+        "label": "GARAGE"
+      },
+      {
+        "type": "storage",
+        "area": 2.97,
+        "label": "CELLIER"
+      },
+      {
+        "type": "kitchen",
+        "area": 15.9,
+        "label": "CUISINE"
+      },
+      {
+        "type": "entrance",
+        "area": 3.28,
+        "label": "PORCHE"
+      },
+      {
+        "type": "hallway",
+        "area": 13.24,
+        "label": "HALL"
+      },
+      {
+        "type": "dining",
+        "label": "REPAS"
+      },
+      {
+        "type": "living_room",
+        "area": 24.53,
+        "label": "SEJOUR"
+      },
+      {
+        "type": "veranda",
+        "area": 20.45,
+        "label": "SALON VERANDA"
+      },
+      {
+        "type": "closet",
+        "label": "PLACARD"
+      },
+      {
+        "type": "wc",
+        "area": 1.52,
+        "label": "WC"
+      },
+      {
+        "type": "bedroom",
+        "area": 15.19,
+        "label": "CHAMBRE 2"
+      },
+      {
+        "type": "shower_room",
+        "area": 5.49,
+        "label": "DOUCHE"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.62,
+        "label": "CHAMBRE 1"
+      }
+    ],
+    "metadata": {
+      "has_veranda": true
+    }
+  }

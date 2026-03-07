@@ -1,0 +1,22 @@
+{
+  "is_valid": false,
+  "errors": [
+    {
+      "severity": "critical",
+      "code": "BATHROOM_NOT_ACCESSIBLE",
+      "message": "Bathroom must be accessible from at least one room"
+    },
+    {
+      "severity": "warning",
+      "code": "NO_ENTRANCE_DEFINED",
+      "message": "No entrance/entry point defined in layout"
+    },
+    {
+      "severity": "warning",
+      "code": "LOW_SPACE_EFFICIENCY",
+      "message": "Space efficiency (47.0%) is low - too much area in walls/circulation"
+    }
+  ],
+  "num_errors": 1,
+  "num_warnings": 2
+}

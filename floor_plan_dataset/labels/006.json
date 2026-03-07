@@ -1,0 +1,75 @@
+  {
+    "layout_id": "plan_006",
+    "image_file": "1770698095002_005.jpg",
+    "total_area": 100.94,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 10.55,
+      "height": 15.9
+    },
+    "rooms": [
+      {
+        "type": "garage",
+        "area": 17.23,
+        "label": "GARAGE"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.36,
+        "label": "CHAMBRE 2"
+      },
+      {
+        "type": "hallway",
+        "area": 6.09,
+        "label": "DEGT.",
+        "note": "D."
+      },
+      {
+        "type": "bedroom",
+        "area": 15.05,
+        "label": "CHAMBRE 3"
+      },
+      {
+        "type": "wc",
+        "area": 1.9,
+        "label": "WC"
+      },
+      {
+        "type": "bedroom",
+        "area": 12.28,
+        "label": "CHAMBRE 1"
+      },
+      {
+        "type": "entrance",
+        "area": 1.2,
+        "label": "PORCHE"
+      },
+      {
+        "type": "hallway",
+        "label": "HALL"
+      },
+      {
+        "type": "closet",
+        "label": "PL."
+      },
+      {
+        "type": "kitchen",
+        "area": 14.96,
+        "label": "CUISINE"
+      },
+      {
+        "type": "dining",
+        "area": 30.41,
+        "label": "REPAS"
+      },
+      {
+        "type": "living_room",
+        "label": "SEJOUR"
+      }
+    ],
+    "metadata": {
+      "dependencies": "17,23 m2",
+      "total_useful_surface": "100,94 m2",
+      "roof_slope": "0,50 m/m soit 50%"
+    }
+  }

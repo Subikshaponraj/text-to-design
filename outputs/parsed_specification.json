@@ -1,0 +1,63 @@
+{
+  "layout_type": "apartment",
+  "num_bedrooms": 2,
+  "total_estimated_area": 1000,
+  "rooms": [
+    {
+      "type": "living_room",
+      "estimated_area": 200,
+      "requirements": [
+        "window"
+      ],
+      "dimensions": {
+        "width": 11.2,
+        "height": 17.9
+      }
+    },
+    {
+      "type": "bedroom",
+      "estimated_area": 150,
+      "requirements": [
+        "window"
+      ],
+      "dimensions": {
+        "width": 9.7,
+        "height": 15.5
+      }
+    },
+    {
+      "type": "kitchen",
+      "estimated_area": 80,
+      "requirements": [
+        "window",
+        "ventilation"
+      ],
+      "dimensions": {
+        "width": 7.1,
+        "height": 11.3
+      }
+    },
+    {
+      "type": "bathroom",
+      "estimated_area": 40,
+      "requirements": [
+        "ventilation"
+      ],
+      "dimensions": {
+        "width": 5.0,
+        "height": 8.0
+      }
+    }
+  ],
+  "adjacency_requirements": [
+    {
+      "room1": "kitchen",
+      "room2": "living_room",
+      "connection": "door"
+    }
+  ],
+  "special_requirements": [],
+  "design_style": "modern",
+  "parsed_from": "3 bedroom modern house floor plan with garage",
+  "parser_version": "1.0"
+}

@@ -1,0 +1,103 @@
+  {
+    "layout_id": "plan_003",
+    "image_file": "1770698094999_002.jpg",
+    "total_area": 169.99,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 17.91,
+      "height": 11.55
+    },
+    "rooms": [
+      {
+        "type": "terrace",
+        "area": 44.81,
+        "label": "TERRASSE"
+      },
+      {
+        "type": "living_room",
+        "label": "SALON"
+      },
+      {
+        "type": "dining_room",
+        "area": 44.81,
+        "label": "SEJOUR"
+      },
+      {
+        "type": "entrance",
+        "area": 2.1,
+        "label": "ENTREE"
+      },
+      {
+        "type": "shelter",
+        "label": "ABRI"
+      },
+      {
+        "type": "workshop",
+        "area": 12.67,
+        "label": "ATELIER"
+      },
+      {
+        "type": "dressing",
+        "area": 5.23,
+        "label": "DEGT"
+      },
+      {
+        "type": "vestibule",
+        "area": 1.53,
+        "label": "VEST."
+      },
+      {
+        "type": "kitchen",
+        "area": 12.61,
+        "label": "CUISINE"
+      },
+      {
+        "type": "bathroom",
+        "area": 5.9,
+        "label": "BAINS"
+      },
+      {
+        "type": "hallway",
+        "label": "DEGT 2"
+      },
+      {
+        "type": "wc",
+        "area": 2.7,
+        "label": "TOIL"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.88,
+        "label": "CHAMBRE 1"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.63,
+        "label": "CHAMBRE 2"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.45,
+        "label": "CHAMBRE 3"
+      },
+      {
+        "type": "utility_room",
+        "area": 5.66,
+        "label": "A.CUIS."
+      },
+      {
+        "type": "garage",
+        "area": 23.56,
+        "label": "GARAGE"
+      },
+      {
+        "type": "carport",
+        "area": 17.76,
+        "label": "ABRI VOITURE"
+      }
+    ],
+    "metadata": {
+      "has_terrace": true,
+      "has_garage": true
+    }
+  }

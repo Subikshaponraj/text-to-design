@@ -1,0 +1,73 @@
+  {
+    "layout_id": "plan_019",
+    "image_file": "1770698095011_019.jpg",
+    "total_area": 117.17,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 15.7,
+      "height": 11.7
+    },
+    "rooms": [
+      {
+        "type": "garage",
+        "area": 21.96,
+        "label": "GARAGE"
+      },
+      {
+        "type": "bedroom",
+        "area": 10.85,
+        "label": "CHAMBRE 3"
+      },
+      {
+        "type": "wc",
+        "area": 1.44,
+        "label": "WC"
+      },
+      {
+        "type": "entrance",
+        "label": "Porche"
+      },
+      {
+        "type": "bathroom",
+        "area": 5.32,
+        "label": "BAINS"
+      },
+      {
+        "type": "hallway",
+        "area": 6.88,
+        "label": "HALL"
+      },
+      {
+        "type": "bedroom",
+        "area": 10.84,
+        "label": "CHAMBRE 1"
+      },
+      {
+        "type": "closet",
+        "label": "PL."
+      },
+      {
+        "type": "storage",
+        "area": 7.72,
+        "label": "CELLIER"
+      },
+      {
+        "type": "kitchen",
+        "area": 14.95,
+        "label": "CUISINE"
+      },
+      {
+        "type": "bedroom",
+        "area": 12.88,
+        "label": "CHAMBRE 2"
+      },
+      {
+        "type": "living_room",
+        "area": 34.2,
+        "label": "SEJOUR"
+      }
+    ],
+    "metadata": {
+      "three_bedroom_layout": true
+    }
+  }

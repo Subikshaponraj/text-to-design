@@ -1,0 +1,13 @@
+# Requirements for Geometric Floor Plan Generation System
+# Install with: pip install -r requirements.txt
+
+# Core dependencies
+numpy>=1.24.0
+ezdxf>=1.1.0
+svgwrite>=1.4.3
+
+# PNG rendering (required for PNG output)
+Pillow>=10.0.0
+
+# Optional: For enhanced features
+# matplotlib>=3.7.0  # For visualization

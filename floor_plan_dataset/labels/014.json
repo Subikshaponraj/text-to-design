@@ -1,0 +1,88 @@
+  {
+    "layout_id": "plan_014",
+    "image_file": "1770698095008_013.jpg",
+    "total_area": 93.51,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 13.5,
+      "height": 13.7
+    },
+    "rooms": [
+      {
+        "type": "master_bedroom",
+        "area": 12.08,
+        "label": "CHAMBRE PARENTS"
+      },
+      {
+        "type": "dressing",
+        "area": 5.54,
+        "label": "DRESS."
+      },
+      {
+        "type": "bathroom",
+        "area": 5.51,
+        "label": "BAINS"
+      },
+      {
+        "type": "laundry",
+        "area": 4.12,
+        "label": "BUANDERIE"
+      },
+      {
+        "type": "hallway",
+        "label": "DEGAGEMENT"
+      },
+      {
+        "type": "garage",
+        "area": 17.7,
+        "label": "GARAGE"
+      },
+      {
+        "type": "closet",
+        "label": "PL."
+      },
+      {
+        "type": "hallway",
+        "area": 4.39,
+        "label": "HALL"
+      },
+      {
+        "type": "entrance",
+        "area": 3.13,
+        "label": "PORCHE"
+      },
+      {
+        "type": "wc",
+        "area": 2.03,
+        "label": "WC"
+      },
+      {
+        "type": "kitchen",
+        "area": 14.89,
+        "label": "CUISINE"
+      },
+      {
+        "type": "hallway",
+        "area": 7.08,
+        "label": "DEGAGEMENT"
+      },
+      {
+        "type": "dining",
+        "area": 35.52,
+        "label": "REPAS"
+      },
+      {
+        "type": "living_room",
+        "label": "SEJOUR"
+      },
+      {
+        "type": "wooden_terrace",
+        "area": 19.68,
+        "label": "TERRASSE BOIS"
+      }
+    ],
+    "metadata": {
+      "has_master_suite": true,
+      "has_garage": true
+    }
+  }

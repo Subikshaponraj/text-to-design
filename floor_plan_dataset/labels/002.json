@@ -1,0 +1,51 @@
+{
+    "layout_id": "plan_002",
+    "image_file": "1770698094998_001.jpg",
+    "total_area": 29.24,
+    "layout_type": "upper_floor",
+    "dimensions": {
+      "width": 7.8,
+      "height": 10.78
+    },
+    "rooms": [
+      {
+        "type": "landing",
+        "area": 11.93,
+        "label": "PALIER"
+      },
+      {
+        "type": "wc",
+        "area": 1.36,
+        "label": "WC"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.75,
+        "label": "CHAMBRE 4",
+        "ceiling_height": 1.35
+      },
+      {
+        "type": "bedroom",
+        "area": 12.13,
+        "label": "CHAMBRE 3",
+        "ceiling_height": 1.8
+      },
+      {
+        "type": "bathroom",
+        "area": 4.83,
+        "label": "BAINS"
+      },
+      {
+        "type": "void",
+        "label": "vide sur salon"
+      },
+      {
+        "type": "attic",
+        "label": "combles"
+      }
+    ],
+    "metadata": {
+      "floor_level": "upper",
+      "has_sloped_ceiling": true
+    }
+  }

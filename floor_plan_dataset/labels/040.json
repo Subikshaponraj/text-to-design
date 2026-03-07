@@ -1,0 +1,78 @@
+{
+  "layout_id": "plan_005",
+  "image_file": "86483b6a-8af6-447e-affd-b75cc2d1be23.png",
+  "total_area": 112.4,
+  "layout_type": "house",
+  "dimensions": {
+    "width": 14.8,
+    "height": 11.2
+  },
+  "rooms": [
+    {
+      "type": "living_room",
+      "area": 24.6,
+      "label": "LIVING"
+    },
+    {
+      "type": "dining_room",
+      "area": 12.3,
+      "label": "DINING"
+    },
+    {
+      "type": "kitchen",
+      "area": 10.8,
+      "label": "KITCHEN"
+    },
+    {
+      "type": "bedroom",
+      "area": 13.5,
+      "label": "BEDROOM 1"
+    },
+    {
+      "type": "bedroom",
+      "area": 12.1,
+      "label": "BEDROOM 2"
+    },
+    {
+      "type": "bedroom",
+      "area": 11.4,
+      "label": "BEDROOM 3"
+    },
+    {
+      "type": "bathroom",
+      "area": 5.6,
+      "label": "BATH 1"
+    },
+    {
+      "type": "bathroom",
+      "area": 4.9,
+      "label": "BATH 2"
+    },
+    {
+      "type": "bathroom",
+      "area": 4.7,
+      "label": "BATH 3"
+    },
+    {
+      "type": "hallway",
+      "area": 6.2,
+      "label": "HALL"
+    },
+    {
+      "type": "terrace",
+      "area": 8.5,
+      "label": "TERRACE"
+    },
+    {
+      "type": "garage",
+      "area": 17.8,
+      "label": "GARAGE"
+    }
+  ],
+  "metadata": {
+    "has_terrace": true,
+    "garage_included": true,
+    "bathroom_count": 3,
+    "bedroom_count": 3
+  }
+}

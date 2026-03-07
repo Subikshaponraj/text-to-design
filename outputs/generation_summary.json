@@ -1,0 +1,53 @@
+{
+  "input": {
+    "description": "3 bedroom modern house floor plan with garage",
+    "timestamp": "The system cannot accept the date entered.\nEnter the new date: (mm-dd-yy)"
+  },
+  "layout": {
+    "total_area": 1000,
+    "num_rooms": 4,
+    "room_types": [
+      "living_room",
+      "bedroom",
+      "kitchen",
+      "bathroom"
+    ],
+    "layout_type": "apartment"
+  },
+  "validation": {
+    "is_valid": false,
+    "errors": [
+      {
+        "severity": "critical",
+        "code": "BATHROOM_NOT_ACCESSIBLE",
+        "message": "Bathroom must be accessible from at least one room"
+      },
+      {
+        "severity": "warning",
+        "code": "NO_ENTRANCE_DEFINED",
+        "message": "No entrance/entry point defined in layout"
+      },
+      {
+        "severity": "warning",
+        "code": "LOW_SPACE_EFFICIENCY",
+        "message": "Space efficiency (47.0%) is low - too much area in walls/circulation"
+      }
+    ],
+    "num_errors": 1,
+    "num_warnings": 2
+  },
+  "outputs": {
+    "num_images": 3,
+    "image_paths": [
+      "./outputs\\final_layout_000.png",
+      "./outputs\\final_layout_001.png",
+      "./outputs\\final_layout_002.png"
+    ]
+  },
+  "system": {
+    "parser": "LLM-based (HuggingFace)",
+    "validator": "Rule-based Engineering Validator",
+    "generator": "Fine-tuned Stable Diffusion 1.5",
+    "version": "1.0"
+  }
+}

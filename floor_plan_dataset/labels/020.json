@@ -1,0 +1,64 @@
+  {
+    "layout_id": "plan_020",
+    "image_file": "1770698095011_019.jpg",
+    "total_area": 120.62,
+    "layout_type": "house",
+    "dimensions": {
+      "width": 19.75,
+      "height": 10.15
+    },
+    "rooms": [
+      {
+        "type": "garage",
+        "area": 20.79,
+        "label": "GARAGE"
+      },
+      {
+        "type": "storage",
+        "area": 5.36,
+        "label": "CELLIER"
+      },
+      {
+        "type": "bedroom",
+        "area": 11.65,
+        "label": "CHAMBRE 3"
+      },
+      {
+        "type": "bathroom",
+        "area": 7.79,
+        "label": "BAINS"
+      },
+      {
+        "type": "bedroom",
+        "area": 12.88,
+        "label": "CHAMBRE 2"
+      },
+      {
+        "type": "hallway",
+        "area": 12.67,
+        "label": "HALL"
+      },
+      {
+        "type": "closet",
+        "label": "PLACARD"
+      },
+      {
+        "type": "kitchen",
+        "area": 14.7,
+        "label": "CUISINE"
+      },
+      {
+        "type": "bedroom",
+        "area": 12.32,
+        "label": "CHAMBRE 1"
+      },
+      {
+        "type": "living_room",
+        "area": 31.25,
+        "label": "SEJOUR"
+      }
+    ],
+    "metadata": {
+      "note": "Alternative view of plan_007"
+    }
+  }

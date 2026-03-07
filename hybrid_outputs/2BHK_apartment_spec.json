@@ -1,0 +1,176 @@
+{
+  "layout_spec": {
+    "layout_type": "apartment",
+    "rooms": [
+      {
+        "type": "living_room",
+        "label": "Living Room",
+        "width": 15,
+        "height": 12,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "doors": [
+          {
+            "x": 0,
+            "y": 6.0,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 7.5,
+            "y": 12,
+            "width": 4.0,
+            "height": 4.0,
+            "wall_side": "top"
+          }
+        ]
+      },
+      {
+        "type": "kitchen",
+        "label": "Kitchen",
+        "width": 10,
+        "height": 8,
+        "position": {
+          "x": 15.5,
+          "y": 0
+        },
+        "doors": [
+          {
+            "x": 15.5,
+            "y": 4.0,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 25.5,
+            "y": 4.0,
+            "width": 3.0,
+            "height": 3.0,
+            "wall_side": "right"
+          }
+        ]
+      },
+      {
+        "type": "master_bedroom",
+        "label": "Master Bedroom",
+        "width": 14,
+        "height": 12,
+        "position": {
+          "x": 0,
+          "y": 12.5
+        },
+        "doors": [
+          {
+            "x": 0,
+            "y": 18.5,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 7.0,
+            "y": 24.5,
+            "width": 4.0,
+            "height": 4.0,
+            "wall_side": "top"
+          }
+        ]
+      },
+      {
+        "type": "bedroom",
+        "label": "Bedroom 2",
+        "width": 12,
+        "height": 10,
+        "position": {
+          "x": 14.5,
+          "y": 12.5
+        },
+        "doors": [
+          {
+            "x": 14.5,
+            "y": 17.5,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 20.5,
+            "y": 22.5,
+            "width": 4.0,
+            "height": 4.0,
+            "wall_side": "top"
+          }
+        ]
+      },
+      {
+        "type": "bathroom",
+        "label": "Bathroom 1",
+        "width": 7,
+        "height": 5,
+        "position": {
+          "x": 0,
+          "y": 25.0
+        },
+        "doors": [
+          {
+            "x": 0,
+            "y": 27.5,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 3.5,
+            "y": 30.0,
+            "width": 2.0,
+            "height": 2.0,
+            "wall_side": "top"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "description": "2bhk apartment",
+      "is_open_kitchen": false,
+      "is_compact": false,
+      "learned_style": {
+        "layout_style": "modern",
+        "compactness": "medium",
+        "openness": "medium"
+      }
+    }
+  },
+  "learned_preferences": {
+    "adjacency_preferences": [],
+    "size_preferences": {
+      "global_multiplier": 1.0,
+      "learned_from_model": true
+    },
+    "style_preferences": {
+      "layout_style": "modern",
+      "compactness": "medium",
+      "openness": "medium"
+    },
+    "learned_patterns": {
+      "mean_activation": 0.0016024148790165782,
+      "std_activation": 0.9350780248641968,
+      "spatial_variance": 0.8745039701461792
+    },
+    "description": "2BHK apartment"
+  },
+  "used_model_knowledge": true
+}
