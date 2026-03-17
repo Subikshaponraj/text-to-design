@@ -166,9 +166,9 @@
       "openness": "medium"
     },
     "learned_patterns": {
-      "mean_activation": 0.0016024148790165782,
-      "std_activation": 0.9350780248641968,
-      "spatial_variance": 0.8745039701461792
+      "mean_activation": 0.0013059270568192005,
+      "std_activation": 0.9327471852302551,
+      "spatial_variance": 0.8701648712158203
     },
     "description": "2BHK apartment"
   },

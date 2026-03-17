@@ -1,30 +1,38 @@
 """
-Hybrid Floor Plan Generation System
-Uses trained model's knowledge for layout intelligence
-+ Geometric generation for precise output
+True Hybrid Floor Plan Generation System
+Uses diffusion model to generate images, then extracts layout information
 
-Architecture:
-1. Extract embeddings/features from trained model
-2. Analyze spatial patterns and relationships
-3. Generate precise geometric layout based on learned patterns
-4. Export to PNG/DXF/SVG with exact measurements
+Pipeline:
+Text → Diffusion Model → Image → Layout Extraction → Constraint Engine → Geometric Rendering
+
+This is a REAL hybrid system where AI influences the final output!
 """
 
 import torch
 import numpy as np
-from typing import Dict, List, Optional, Tuple
-import json
+from PIL import Image
+import cv2
+from typing import Dict, List, Tuple, Optional
 import os
+import json
 
 try:
-    from diffusers import StableDiffusionPipeline, UNet2DConditionModel
-    from transformers import CLIPTextModel, CLIPTokenizer
+    from diffusers import StableDiffusionPipeline, DPMSolverMultistepScheduler
     HAS_DIFFUSERS = True
 except ImportError:
-    print("Warning: diffusers not installed")
+    print("Warning: diffusers not installed. Run: pip install diffusers")
     HAS_DIFFUSERS = False
 
-from layout_spec_parser import LayoutParser
+try:
+    from scipy import ndimage
+    from scipy.spatial import distance
+    from sklearn.cluster import DBSCAN
+    HAS_SCIPY = True
+except ImportError:
+    print("Warning: scipy/sklearn not installed. Run: pip install scipy scikit-learn")
+    HAS_SCIPY = False
+
+from constraint_engine import ConstraintEngine
 from geometric_layout_generator import GeometricFloorPlanGenerator
 try:
     from enhanced_png_renderer import EnhancedGeometricFloorPlanGenerator
@@ -34,502 +42,781 @@ except:
     EnhancedGeometricFloorPlanGenerator = GeometricFloorPlanGenerator
 
 
-class ModelKnowledgeExtractor:
+class DiffusionLayoutGenerator:
     """
-    Extracts learned knowledge from trained diffusion model
-    WITHOUT using the diffusion generation process
+    Generates floor plan images using Stable Diffusion with LoRA
     """
     
     def __init__(
         self,
-        model_path: str,
-        base_model: str = "runwayml/stable-diffusion-v1-5",
+        model_path: str = "runwayml/stable-diffusion-v1-5",
+        lora_path: Optional[str] = None,
         device: str = "auto"
     ):
         """
-        Initialize knowledge extractor
+        Initialize diffusion model
         
         Args:
-            model_path: Path to trained LoRA model
-            base_model: Base Stable Diffusion model
+            model_path: Base Stable Diffusion model
+            lora_path: Path to LoRA weights (optional)
             device: Device to use
         """
         
         if not HAS_DIFFUSERS:
-            print("Error: diffusers not installed")
-            return
+            raise ImportError("diffusers not installed")
         
         self.device = "cuda" if device == "auto" and torch.cuda.is_available() else "cpu"
+        print(f"Loading diffusion model on {self.device}...")
         
-        print(f"Loading trained model for knowledge extraction...")
-        print(f"Device: {self.device}")
+        # Load base model
+        self.pipe = StableDiffusionPipeline.from_pretrained(
+            model_path,
+            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+            safety_checker=None
+        )
         
-        # Load tokenizer and text encoder (for understanding prompts)
-        self.tokenizer = CLIPTokenizer.from_pretrained(base_model, subfolder="tokenizer")
-        self.text_encoder = CLIPTextModel.from_pretrained(base_model, subfolder="text_encoder")
+        # Use faster scheduler
+        self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(
+            self.pipe.scheduler.config
+        )
         
-        # Load UNet with LoRA weights (contains learned spatial knowledge)
-        try:
-            lora_weights = os.path.join(model_path, "pytorch_lora_weights.safetensors")
-            if os.path.exists(lora_weights):
-                self.unet = UNet2DConditionModel.from_pretrained(base_model, subfolder="unet")
-                # Load LoRA weights
-                self.unet.load_attn_procs(model_path)
-                print(f"✓ Loaded LoRA weights from {lora_weights}")
-            else:
-                print(f"Warning: LoRA weights not found, using base model")
-                self.unet = UNet2DConditionModel.from_pretrained(base_model, subfolder="unet")
-        except Exception as e:
-            print(f"Error loading model: {e}")
-            self.unet = None
+        self.pipe = self.pipe.to(self.device)
         
-        if self.unet:
-            self.unet.to(self.device)
-            self.unet.eval()
+        # Load LoRA weights if provided
+        if lora_path and os.path.exists(lora_path):
+            try:
+                print(f"Loading LoRA weights from {lora_path}...")
+                self.pipe.unet.load_attn_procs(lora_path)
+                print("✓ LoRA weights loaded successfully")
+            except Exception as e:
+                print(f"Warning: Could not load LoRA weights: {e}")
         
-        self.text_encoder.to(self.device)
-        self.text_encoder.eval()
+        # Enable memory optimizations
+        if self.device == "cuda":
+            self.pipe.enable_attention_slicing()
         
-        print("✓ Model loaded for knowledge extraction")
+        print("✓ Diffusion model ready")
     
-    def extract_layout_preferences(self, description: str) -> Dict:
+    def generate_floorplan_image(
+        self,
+        description: str,
+        output_path: str = "ai_layout.png",
+        num_inference_steps: int = 30,
+        guidance_scale: float = 7.5,
+        seed: Optional[int] = None
+    ) -> Image.Image:
         """
-        Extract layout preferences learned by the model
-        WITHOUT generating images via diffusion
-        
-        This analyzes the model's learned embeddings and attention patterns
-        to understand spatial relationships and room preferences
+        Generate floor plan image from text description
         
         Args:
-            description: Text description of floor plan
+            description: Text description (e.g., "2BHK apartment")
+            output_path: Where to save generated image
+            num_inference_steps: Number of diffusion steps
+            guidance_scale: Guidance scale for generation
+            seed: Random seed for reproducibility
             
         Returns:
-            Dictionary of learned preferences and spatial patterns
+            Generated PIL Image
         """
         
-        if not self.unet:
-            print("Warning: Model not loaded, using default preferences")
-            return self._get_default_preferences()
+        # Create optimized prompt for floor plan generation
+        prompt = self._create_floorplan_prompt(description)
         
-        print(f"\nExtracting learned knowledge from trained model...")
-        print(f"Description: '{description}'")
+        print(f"\nGenerating floor plan image with diffusion model...")
+        print(f"Prompt: {prompt}")
+        print(f"Steps: {num_inference_steps}, Guidance: {guidance_scale}")
         
-        # Encode text to get semantic understanding
+        # Set random seed if provided
+        generator = None
+        if seed is not None:
+            generator = torch.Generator(device=self.device).manual_seed(seed)
+        
+        # Generate image
         with torch.no_grad():
-            text_inputs = self.tokenizer(
-                description,
-                padding="max_length",
-                max_length=self.tokenizer.model_max_length,
-                truncation=True,
-                return_tensors="pt"
+            result = self.pipe(
+                prompt=prompt,
+                negative_prompt="3D, perspective, blurry, photograph, realistic, colored, decorations",
+                num_inference_steps=num_inference_steps,
+                guidance_scale=guidance_scale,
+                generator=generator,
+                height=512,
+                width=512
             )
-            text_embeddings = self.text_encoder(
-                text_inputs.input_ids.to(self.device)
-            )[0]
         
-        # Analyze learned patterns from UNet attention layers
-        # These contain spatial relationship knowledge from training
-        learned_patterns = self._analyze_attention_patterns(text_embeddings)
+        image = result.images[0]
         
-        # Extract room adjacency preferences
-        adjacency_prefs = self._extract_adjacency_preferences(description, learned_patterns)
+        # Save generated image
+        image.save(output_path)
+        print(f"✓ Generated image saved: {output_path}")
         
-        # Extract room size preferences
-        size_prefs = self._extract_size_preferences(description, learned_patterns)
-        
-        # Extract layout style preferences
-        style_prefs = self._extract_style_preferences(description, learned_patterns)
-        
-        preferences = {
-            'adjacency_preferences': adjacency_prefs,
-            'size_preferences': size_prefs,
-            'style_preferences': style_prefs,
-            'learned_patterns': learned_patterns,
-            'description': description
-        }
-        
-        print(f"✓ Extracted layout preferences from trained model")
-        print(f"  - Adjacency patterns: {len(adjacency_prefs)} relationships")
-        print(f"  - Size preferences: {len(size_prefs)} rooms")
-        print(f"  - Style: {style_prefs.get('layout_style', 'standard')}")
-        
-        return preferences
+        return image
     
-    def _analyze_attention_patterns(self, text_embeddings: torch.Tensor) -> Dict:
+    def _create_floorplan_prompt(self, description: str) -> str:
         """
-        Analyze UNet attention patterns to extract spatial knowledge
+        Create optimized prompt for floor plan generation
         
-        The attention layers in the trained UNet have learned:
-        - Which rooms should be adjacent
-        - Typical room sizes and proportions
-        - Common layout patterns
-        """
-        
-        # Sample a small latent to probe attention patterns
-        # We're not generating an image - just analyzing the model's internal representations
-        sample_latent = torch.randn(1, 4, 64, 64).to(self.device)
-        timestep = torch.tensor([500]).to(self.device)  # Mid-point timestep
-        
-        with torch.no_grad():
-            # Forward pass to get attention patterns (no diffusion loop)
-            try:
-                model_output = self.unet(
-                    sample_latent,
-                    timestep,
-                    encoder_hidden_states=text_embeddings,
-                    return_dict=True
-                )
-                
-                # Extract spatial patterns from output
-                # The model's learned representations encode spatial relationships
-                output_features = model_output.sample
-                
-                # Analyze feature statistics
-                feature_stats = {
-                    'mean_activation': float(output_features.mean()),
-                    'std_activation': float(output_features.std()),
-                    'spatial_variance': float(output_features.var(dim=(-2, -1)).mean()),
-                }
-                
-                return feature_stats
-            except Exception as e:
-                print(f"Warning: Could not analyze attention patterns: {e}")
-                return {}
-    
-    def _extract_adjacency_preferences(self, description: str, patterns: Dict) -> List[Dict]:
-        """
-        Extract room adjacency preferences learned by the model
-        
-        Based on training data, the model learned which rooms are typically adjacent
+        Args:
+            description: User description
+            
+        Returns:
+            Optimized prompt
         """
         
-        adjacencies = []
-        desc_lower = description.lower()
+        # Base prompt for architectural floor plans
+        base = "black and white architectural floor plan, top-down view, 2D layout, "
         
-        # Common adjacencies learned from typical floor plans
-        if 'open kitchen' in desc_lower or 'open plan' in desc_lower:
-            adjacencies.append({
-                'room1': 'kitchen',
-                'room2': 'living_room',
-                'connection': 'open',
-                'confidence': 0.95
-            })
+        # Add description
+        base += description + ", "
         
-        if 'attached bathroom' in desc_lower or 'ensuite' in desc_lower:
-            adjacencies.append({
-                'room1': 'master_bedroom',
-                'room2': 'bathroom',
-                'connection': 'door',
-                'confidence': 0.90,
-                'private': True
-            })
+        # Add style keywords
+        base += "labeled rooms, clear walls, simple design, blueprint style, "
+        base += "professional architectural drawing, CAD style, minimalist"
         
-        if 'dining' in desc_lower:
-            adjacencies.append({
-                'room1': 'dining',
-                'room2': 'living_room',
-                'connection': 'open',
-                'confidence': 0.85
-            })
-            adjacencies.append({
-                'room1': 'dining',
-                'room2': 'kitchen',
-                'connection': 'door',
-                'confidence': 0.80
-            })
-        
-        # Use model patterns to adjust confidence
-        if patterns.get('spatial_variance', 0) > 0.5:
-            # High variance suggests more creative/varied layouts
-            for adj in adjacencies:
-                adj['confidence'] *= 0.9
-        
-        return adjacencies
-    
-    def _extract_size_preferences(self, description: str, patterns: Dict) -> Dict:
-        """
-        Extract room size preferences from learned patterns
-        
-        The model learned typical room proportions from training data
-        """
-        
-        size_prefs = {}
-        desc_lower = description.lower()
-        
-        # Adjust based on descriptors
-        if 'compact' in desc_lower or 'small' in desc_lower or 'studio' in desc_lower:
-            multiplier = 0.85
-        elif 'spacious' in desc_lower or 'large' in desc_lower or 'luxury' in desc_lower:
-            multiplier = 1.2
-        elif 'penthouse' in desc_lower:
-            multiplier = 1.4
-        else:
-            multiplier = 1.0
-        
-        # Use learned patterns to adjust
-        if patterns.get('mean_activation', 0) > 0.1:
-            # Higher activations might indicate larger spaces in training
-            multiplier *= 1.1
-        
-        size_prefs['global_multiplier'] = multiplier
-        size_prefs['learned_from_model'] = True
-        
-        return size_prefs
-    
-    def _extract_style_preferences(self, description: str, patterns: Dict) -> Dict:
-        """Extract layout style preferences"""
-        
-        desc_lower = description.lower()
-        
-        style = {
-            'layout_style': 'modern',
-            'compactness': 'medium',
-            'openness': 'medium'
-        }
-        
-        if 'modern' in desc_lower or 'contemporary' in desc_lower:
-            style['layout_style'] = 'modern'
-            style['openness'] = 'high'
-        elif 'traditional' in desc_lower or 'classic' in desc_lower:
-            style['layout_style'] = 'traditional'
-            style['openness'] = 'low'
-        
-        if 'open plan' in desc_lower or 'open kitchen' in desc_lower:
-            style['openness'] = 'high'
-        
-        if 'compact' in desc_lower:
-            style['compactness'] = 'high'
-        elif 'spacious' in desc_lower:
-            style['compactness'] = 'low'
-        
-        return style
-    
-    def _get_default_preferences(self) -> Dict:
-        """Fallback preferences if model not available"""
-        return {
-            'adjacency_preferences': [],
-            'size_preferences': {'global_multiplier': 1.0},
-            'style_preferences': {'layout_style': 'modern'},
-            'learned_patterns': {}
-        }
+        return base
 
 
-class HybridFloorPlanSystem:
+class ImageLayoutExtractor:
     """
-    Hybrid system combining trained model knowledge + geometric precision
+    Extracts layout information from generated floor plan images
+    """
     
-    Process:
-    1. Extract learned patterns from trained model (NO diffusion)
-    2. Apply learned preferences to layout specification
-    3. Generate precise geometric layout
-    4. Export to PNG/DXF/SVG with exact measurements
+    def __init__(self, grid_size: int = 32):
+        """
+        Initialize layout extractor
+        
+        Args:
+            grid_size: Size of grid for analysis (32x32 recommended)
+        """
+        self.grid_size = grid_size
+    
+    def extract_layout_from_image(
+        self,
+        image: Image.Image,
+        num_rooms: int,
+        room_types: List[str]
+    ) -> Dict:
+        """
+        Extract layout information from generated image
+        
+        Args:
+            image: Generated floor plan image
+            num_rooms: Expected number of rooms
+            room_types: List of room types (e.g., ['bedroom', 'kitchen'])
+            
+        Returns:
+            Layout specification dictionary
+        """
+        
+        print(f"\nExtracting layout from AI-generated image...")
+        print(f"Target: {num_rooms} rooms of types {room_types}")
+        
+        # Step 1: Preprocess image
+        processed = self._preprocess_image(image)
+        
+        # Step 2: Detect room regions
+        room_regions = self._detect_room_regions(processed, num_rooms)
+        
+        # Step 3: Convert regions to bounding boxes
+        bounding_boxes = self._regions_to_bounding_boxes(room_regions)
+        
+        # Step 4: Create layout specification
+        layout_spec = self._create_layout_spec(bounding_boxes, room_types)
+        
+        print(f"✓ Extracted {len(layout_spec['rooms'])} room regions from AI image")
+        
+        return layout_spec
+    
+    def _preprocess_image(self, image: Image.Image) -> np.ndarray:
+        """
+        Preprocess image for layout extraction
+        
+        Args:
+            image: Input image
+            
+        Returns:
+            Processed numpy array
+        """
+        
+        # Convert to grayscale
+        gray = image.convert('L')
+        
+        # Resize to grid size
+        resized = gray.resize((self.grid_size, self.grid_size), Image.Resampling.LANCZOS)
+        
+        # Convert to numpy array
+        img_array = np.array(resized)
+        
+        # Apply threshold to get binary image (dark = rooms/walls)
+        # Invert so rooms are white, background is black
+        threshold = np.mean(img_array)
+        binary = (img_array < threshold).astype(np.uint8) * 255
+        
+        return binary
+    
+    def _detect_room_regions(self, binary_image: np.ndarray, target_rooms: int) -> List[np.ndarray]:
+        """
+        Detect room regions in binary image
+        
+        Args:
+            binary_image: Binary image (rooms as white regions)
+            target_rooms: Target number of rooms
+            
+        Returns:
+            List of room region masks
+        """
+        
+        if not HAS_SCIPY:
+            # Fallback: Simple grid division
+            return self._simple_grid_division(binary_image, target_rooms)
+        
+        # Label connected components
+        labeled, num_features = ndimage.label(binary_image)
+        
+        # Get region properties
+        regions = []
+        for label_id in range(1, num_features + 1):
+            region_mask = (labeled == label_id)
+            region_size = np.sum(region_mask)
+            
+            # Filter out very small regions (noise)
+            if region_size > (self.grid_size * self.grid_size) * 0.02:  # At least 2% of image
+                regions.append(region_mask)
+        
+        # If we have too many regions, merge small ones
+        if len(regions) > target_rooms * 1.5:
+            regions = self._merge_small_regions(regions, target_rooms)
+        
+        # If we have too few regions, split large ones
+        if len(regions) < target_rooms:
+            regions = self._split_large_regions(regions, target_rooms, binary_image.shape)
+        
+        return regions[:target_rooms]  # Return target number of regions
+    
+    def _simple_grid_division(self, binary_image: np.ndarray, num_rooms: int) -> List[np.ndarray]:
+        """
+        Fallback: Simple grid division when scipy not available
+        
+        Args:
+            binary_image: Binary image
+            num_rooms: Number of rooms to create
+            
+        Returns:
+            List of region masks
+        """
+        
+        regions = []
+        h, w = binary_image.shape
+        
+        # Determine grid layout
+        if num_rooms <= 2:
+            rows, cols = 1, num_rooms
+        elif num_rooms <= 4:
+            rows, cols = 2, 2
+        elif num_rooms <= 6:
+            rows, cols = 2, 3
+        else:
+            rows, cols = 3, 3
+        
+        # Create grid regions
+        for i in range(min(rows, num_rooms)):
+            for j in range(min(cols, num_rooms)):
+                if len(regions) >= num_rooms:
+                    break
+                
+                # Calculate region bounds
+                y1 = int(i * h / rows)
+                y2 = int((i + 1) * h / rows)
+                x1 = int(j * w / cols)
+                x2 = int((j + 1) * w / cols)
+                
+                # Create mask for this region
+                mask = np.zeros_like(binary_image, dtype=bool)
+                mask[y1:y2, x1:x2] = True
+                
+                regions.append(mask)
+        
+        return regions
+    
+    def _merge_small_regions(self, regions: List[np.ndarray], target: int) -> List[np.ndarray]:
+        """Merge small regions to reach target count"""
+        
+        # Sort by size
+        sorted_regions = sorted(regions, key=lambda r: np.sum(r), reverse=True)
+        
+        # Keep largest target regions
+        return sorted_regions[:target]
+    
+    def _split_large_regions(
+        self, 
+        regions: List[np.ndarray], 
+        target: int,
+        image_shape: Tuple[int, int]
+    ) -> List[np.ndarray]:
+        """Split large regions to reach target count"""
+        
+        result = list(regions)
+        
+        while len(result) < target:
+            # Find largest region
+            largest_idx = max(range(len(result)), key=lambda i: np.sum(result[i]))
+            largest = result[largest_idx]
+            
+            # Split it in half (vertically or horizontally based on aspect ratio)
+            coords = np.argwhere(largest)
+            
+            if len(coords) == 0:
+                break
+            
+            min_y, min_x = coords.min(axis=0)
+            max_y, max_x = coords.max(axis=0)
+            
+            height = max_y - min_y
+            width = max_x - min_x
+            
+            # Split along longer dimension
+            mask1 = np.zeros_like(largest)
+            mask2 = np.zeros_like(largest)
+            
+            if height > width:
+                # Split horizontally
+                mid_y = (min_y + max_y) // 2
+                mask1[min_y:mid_y, :] = largest[min_y:mid_y, :]
+                mask2[mid_y:max_y, :] = largest[mid_y:max_y, :]
+            else:
+                # Split vertically
+                mid_x = (min_x + max_x) // 2
+                mask1[:, min_x:mid_x] = largest[:, min_x:mid_x]
+                mask2[:, mid_x:max_x] = largest[:, mid_x:max_x]
+            
+            # Replace largest with two split regions
+            result[largest_idx] = mask1
+            result.append(mask2)
+        
+        return result
+    
+    def _regions_to_bounding_boxes(self, regions: List[np.ndarray]) -> List[Dict]:
+        """
+        Convert region masks to bounding boxes
+        
+        Args:
+            regions: List of binary masks
+            
+        Returns:
+            List of bounding box dictionaries
+        """
+        
+        bboxes = []
+        
+        for region in regions:
+            coords = np.argwhere(region)
+            
+            if len(coords) == 0:
+                continue
+            
+            # Get bounding box
+            min_y, min_x = coords.min(axis=0)
+            max_y, max_x = coords.max(axis=0)
+            
+            # Convert from grid coordinates to feet (scale factor)
+            scale_factor = 40.0 / self.grid_size  # Assume 40 feet total width
+            
+            bbox = {
+                'x': float(min_x * scale_factor),
+                'y': float(min_y * scale_factor),
+                'width': float((max_x - min_x) * scale_factor),
+                'height': float((max_y - min_y) * scale_factor)
+            }
+            
+            bboxes.append(bbox)
+        
+        return bboxes
+    
+    def _create_layout_spec(
+        self,
+        bounding_boxes: List[Dict],
+        room_types: List[str]
+    ) -> Dict:
+        """
+        Create layout specification from bounding boxes
+        
+        Args:
+            bounding_boxes: List of bounding boxes
+            room_types: List of room types to assign
+            
+        Returns:
+            Layout specification dictionary
+        """
+        
+        layout_spec = {
+            'layout_type': 'ai_generated',
+            'source': 'diffusion_model',
+            'rooms': []
+        }
+        
+        # Assign room types to bounding boxes
+        for i, bbox in enumerate(bounding_boxes):
+            # Get room type (cycle through if we have more boxes than types)
+            room_type = room_types[i % len(room_types)] if room_types else 'room'
+            
+            # Create room label
+            room_label = self._type_to_label(room_type, i)
+            
+            # Create room specification
+            room_spec = {
+                'type': room_type,
+                'label': room_label,
+                'width': max(bbox['width'], 6.0),  # Minimum 6 feet
+                'height': max(bbox['height'], 6.0),  # Minimum 6 feet
+                'position': {
+                    'x': bbox['x'],
+                    'y': bbox['y']
+                },
+                'doors': [
+                    {
+                        'x': bbox['x'],
+                        'y': bbox['y'] + bbox['height'] / 2,
+                        'width': 3.0
+                    }
+                ],
+                'windows': [
+                    {
+                        'x': bbox['x'] + bbox['width'] / 2,
+                        'y': bbox['y'] + bbox['height'],
+                        'width': 4.0,
+                        'height': 4.0
+                    }
+                ] if room_type not in ['bathroom', 'toilet'] else []
+            }
+            
+            layout_spec['rooms'].append(room_spec)
+        
+        return layout_spec
+    
+    def _type_to_label(self, room_type: str, index: int) -> str:
+        """Convert room type to display label"""
+        
+        labels = {
+            'living_room': 'Living Room',
+            'bedroom': f'Bedroom {index}' if index > 0 else 'Master Bedroom',
+            'master_bedroom': 'Master Bedroom',
+            'kitchen': 'Kitchen',
+            'bathroom': f'Bathroom {index}' if index > 0 else 'Bathroom',
+            'toilet': 'Toilet',
+            'dining': 'Dining Room',
+            'hall': 'Hall',
+            'study': 'Study',
+            'balcony': 'Balcony'
+        }
+        
+        return labels.get(room_type, room_type.title())
+
+
+class TrueHybridFloorPlanSystem:
+    """
+    True hybrid system that uses diffusion model for actual generation
+    
+    Pipeline:
+    Text → Diffusion → Image → Extract Layout → Constraints → Geometry → Output
     """
     
     def __init__(
         self,
-        model_path: Optional[str] = None,
-        use_model_knowledge: bool = True
+        model_path: str = "runwayml/stable-diffusion-v1-5",
+        lora_path: Optional[str] = None,
+        use_diffusion: bool = True
     ):
         """
-        Initialize hybrid system
+        Initialize true hybrid system
         
         Args:
-            model_path: Path to trained model (optional)
-            use_model_knowledge: Whether to use model's learned knowledge
+            model_path: Stable Diffusion model path
+            lora_path: LoRA weights path (optional)
+            use_diffusion: Whether to use diffusion model
         """
         
-        self.use_model_knowledge = use_model_knowledge and model_path is not None
+        self.use_diffusion = use_diffusion
         
-        # Initialize components
-        self.parser = LayoutParser()
-        
-        if HAS_PNG:
-            self.generator = EnhancedGeometricFloorPlanGenerator()
-        else:
-            self.generator = GeometricFloorPlanGenerator()
-        
-        # Initialize model knowledge extractor if requested
-        self.knowledge_extractor = None
-        if self.use_model_knowledge:
+        # Initialize diffusion generator if enabled
+        self.diffusion_generator = None
+        if use_diffusion and HAS_DIFFUSERS:
             try:
-                self.knowledge_extractor = ModelKnowledgeExtractor(model_path)
+                self.diffusion_generator = DiffusionLayoutGenerator(
+                    model_path=model_path,
+                    lora_path=lora_path
+                )
             except Exception as e:
-                print(f"Warning: Could not load model for knowledge extraction: {e}")
-                self.use_model_knowledge = False
+                print(f"Warning: Could not initialize diffusion model: {e}")
+                self.use_diffusion = False
+        
+        # Initialize layout extractor
+        self.layout_extractor = ImageLayoutExtractor(grid_size=32)
+        
+        # Initialize constraint engine
+        self.constraint_engine = ConstraintEngine(
+            max_iterations=10,
+            auto_correct=True,
+            strict_mode=False
+        )
+        
+        # Initialize geometric generator
+        if HAS_PNG:
+            self.geometric_generator = EnhancedGeometricFloorPlanGenerator()
+        else:
+            self.geometric_generator = GeometricFloorPlanGenerator()
+        
+        print(f"\n✓ True Hybrid System initialized")
+        print(f"  Diffusion: {'Enabled' if self.use_diffusion else 'Disabled'}")
+        print(f"  Constraint Engine: Enabled")
+        print(f"  Geometric Rendering: Enabled")
     
     def generate(
         self,
         description: str,
         output_dir: str = "./hybrid_outputs",
-        output_formats: List[str] = ['png', 'dxf', 'svg']
+        num_inference_steps: int = 30,
+        save_intermediate: bool = True
     ) -> Dict:
         """
-        Generate floor plan using hybrid approach
+        Generate floor plan using true hybrid approach
         
         Args:
             description: Text description
             output_dir: Output directory
-            output_formats: Formats to export
+            num_inference_steps: Diffusion steps
+            save_intermediate: Save intermediate outputs
             
         Returns:
             Generation results
         """
         
         print(f"\n{'='*80}")
-        print("Hybrid Floor Plan Generation")
+        print("TRUE HYBRID FLOOR PLAN GENERATION")
         print(f"{'='*80}")
         print(f"Description: {description}")
-        print(f"Using Model Knowledge: {self.use_model_knowledge}")
+        print(f"Using Diffusion: {self.use_diffusion}")
         print(f"{'='*80}\n")
         
         os.makedirs(output_dir, exist_ok=True)
         
-        # Step 1: Extract learned preferences from model (if available)
-        if self.use_model_knowledge:
-            print("STEP 1: Extracting Knowledge from Trained Model")
-            print("-" * 40)
-            learned_prefs = self.knowledge_extractor.extract_layout_preferences(description)
+        # Parse description to get room count and types
+        room_info = self._parse_description(description)
+        
+        # STEP 1: Generate image with diffusion model
+        print("STEP 1: Diffusion Model - Generating Floor Plan Image")
+        print("-" * 40)
+        
+        if self.use_diffusion and self.diffusion_generator:
+            ai_image_path = os.path.join(output_dir, "ai_layout.png")
+            ai_image = self.diffusion_generator.generate_floorplan_image(
+                description=description,
+                output_path=ai_image_path,
+                num_inference_steps=num_inference_steps
+            )
+            print(f"✓ AI-generated image: {ai_image_path}")
         else:
-            print("STEP 1: Using Rule-Based Approach (No Model)")
-            print("-" * 40)
-            learned_prefs = None
+            print("⚠ Diffusion disabled, using rule-based layout")
+            ai_image = None
         
-        # Step 2: Parse description
-        print("\nSTEP 2: Parsing Description")
+        # STEP 2: Extract layout from AI image
+        print("\nSTEP 2: Image Processing - Extracting Layout from AI Image")
         print("-" * 40)
-        layout_spec = self.parser.parse_text_description(description)
         
-        # Step 3: Apply learned preferences
-        if learned_prefs:
-            print("\nSTEP 3: Applying Learned Preferences")
-            print("-" * 40)
-            layout_spec = self._apply_learned_preferences(layout_spec, learned_prefs)
+        if ai_image:
+            ai_layout_spec = self.layout_extractor.extract_layout_from_image(
+                image=ai_image,
+                num_rooms=room_info['num_rooms'],
+                room_types=room_info['room_types']
+            )
+            
+            if save_intermediate:
+                spec_path = os.path.join(output_dir, "ai_extracted_layout.json")
+                with open(spec_path, 'w') as f:
+                    json.dump(ai_layout_spec, f, indent=2)
+                print(f"✓ AI-extracted layout saved: {spec_path}")
+        else:
+            # Fallback to rule-based
+            ai_layout_spec = self._create_fallback_layout(room_info)
+            print("✓ Using fallback rule-based layout")
         
-        # Step 4: Generate geometric layout
-        print(f"\nSTEP {'4' if learned_prefs else '3'}: Creating Geometric Layout")
+        # STEP 3: Constraint Engine - Validate and correct
+        print("\nSTEP 3: Constraint Engine - Validating AI Layout")
         print("-" * 40)
-        self.generator.parse_layout_specification(layout_spec)
-        print(f"✓ Generated {len(self.generator.rooms)} rooms")
         
-        # Step 5: Export
-        print(f"\nSTEP {'5' if learned_prefs else '4'}: Exporting to Formats")
+        is_valid, validated_spec, violations = self.constraint_engine.validate_and_correct(
+            ai_layout_spec
+        )
+        
+        print(f"✓ AI layout validated and corrected")
+        print(f"  Corrections applied: {len(self.constraint_engine.corrections_applied)}")
+        
+        # STEP 4: Geometric rendering
+        print("\nSTEP 4: Geometric Rendering - Creating Final Floor Plan")
+        print("-" * 40)
+        
+        self.geometric_generator.parse_layout_specification(validated_spec)
+        print(f"✓ Geometric layout created with {len(self.geometric_generator.rooms)} rooms")
+        
+        # STEP 5: Export to formats
+        print("\nSTEP 5: Multi-Format Export")
         print("-" * 40)
         
         output_files = {}
         base_name = description.replace(' ', '_')[:40]
         
-        if 'png' in output_formats and hasattr(self.generator, 'export_to_png'):
-            png_path = os.path.join(output_dir, f"{base_name}.png")
-            self.generator.export_to_png(png_path)
+        # PNG
+        if hasattr(self.geometric_generator, 'export_to_png'):
+            png_path = os.path.join(output_dir, f"{base_name}_final.png")
+            self.geometric_generator.export_to_png(png_path)
             output_files['png'] = png_path
         
-        if 'dxf' in output_formats:
-            dxf_path = os.path.join(output_dir, f"{base_name}.dxf")
-            self.generator.export_to_dxf(dxf_path)
-            output_files['dxf'] = dxf_path
+        # DXF
+        dxf_path = os.path.join(output_dir, f"{base_name}_final.dxf")
+        self.geometric_generator.export_to_dxf(dxf_path)
+        output_files['dxf'] = dxf_path
         
-        if 'svg' in output_formats:
-            svg_path = os.path.join(output_dir, f"{base_name}.svg")
-            self.generator.export_to_svg(svg_path)
-            output_files['svg'] = svg_path
+        # SVG
+        svg_path = os.path.join(output_dir, f"{base_name}_final.svg")
+        self.geometric_generator.export_to_svg(svg_path)
+        output_files['svg'] = svg_path
         
-        # Save specification
-        spec_path = os.path.join(output_dir, f"{base_name}_spec.json")
-        with open(spec_path, 'w') as f:
-            json.dump({
-                'layout_spec': layout_spec,
-                'learned_preferences': learned_prefs if learned_prefs else {},
-                'used_model_knowledge': self.use_model_knowledge
-            }, f, indent=2)
-        output_files['json'] = spec_path
+        # Save complete report
+        report = {
+            'description': description,
+            'used_diffusion': self.use_diffusion,
+            'ai_image': ai_image_path if ai_image else None,
+            'ai_extracted_layout': ai_layout_spec,
+            'constraint_validation': {
+                'is_valid': is_valid,
+                'corrections_applied': self.constraint_engine.corrections_applied,
+                'violations': [
+                    {
+                        'type': v.type.value,
+                        'severity': v.severity.value,
+                        'message': v.message
+                    }
+                    for v in violations[:10]
+                ]
+            },
+            'output_files': output_files
+        }
+        
+        report_path = os.path.join(output_dir, f"{base_name}_report.json")
+        with open(report_path, 'w') as f:
+            json.dump(report, f, indent=2)
+        output_files['report'] = report_path
         
         print(f"\n{'='*80}")
         print("GENERATION COMPLETE")
         print(f"{'='*80}")
-        print(f"Model Knowledge Used: {self.use_model_knowledge}")
-        print(f"Output Files: {len(output_files)}")
+        print(f"AI-Generated: {'Yes' if self.use_diffusion else 'No (fallback)'}")
+        print(f"Constraints Applied: {len(self.constraint_engine.corrections_applied)}")
+        print(f"\nOutput Files:")
         for fmt, path in output_files.items():
-            print(f"  - {fmt.upper()}: {path}")
+            print(f"  {fmt.upper()}: {path}")
         print(f"{'='*80}\n")
         
+        return report
+    
+    def _parse_description(self, description: str) -> Dict:
+        """Parse description to extract room information"""
+        
+        desc_lower = description.lower()
+        
+        # Extract bedroom count
+        num_bedrooms = 1
+        if '2bhk' in desc_lower or '2 bhk' in desc_lower:
+            num_bedrooms = 2
+        elif '3bhk' in desc_lower or '3 bhk' in desc_lower:
+            num_bedrooms = 3
+        elif '4bhk' in desc_lower or '4 bhk' in desc_lower:
+            num_bedrooms = 4
+        elif '1bhk' in desc_lower or '1 bhk' in desc_lower:
+            num_bedrooms = 1
+        
+        # Build room types list
+        room_types = []
+        
+        # Add living room or hall
+        if 'hall' in desc_lower:
+            room_types.append('hall')
+        else:
+            room_types.append('living_room')
+        
+        # Add bedrooms
+        for i in range(num_bedrooms):
+            if i == 0:
+                room_types.append('master_bedroom')
+            else:
+                room_types.append('bedroom')
+        
+        # Add kitchen
+        room_types.append('kitchen')
+        
+        # Add bathrooms
+        num_bathrooms = max(1, num_bedrooms // 2)
+        for i in range(num_bathrooms):
+            room_types.append('bathroom')
+        
+        # Optional rooms
+        if 'study' in desc_lower:
+            room_types.append('study')
+        if 'dining' in desc_lower:
+            room_types.append('dining')
+        if 'balcony' in desc_lower:
+            room_types.append('balcony')
+        
         return {
-            'output_files': output_files,
-            'used_model_knowledge': self.use_model_knowledge,
-            'layout_spec': layout_spec
+            'num_rooms': len(room_types),
+            'room_types': room_types,
+            'num_bedrooms': num_bedrooms
         }
     
-    def _apply_learned_preferences(self, layout_spec: Dict, learned_prefs: Dict) -> Dict:
-        """Apply learned preferences to layout specification"""
+    def _create_fallback_layout(self, room_info: Dict) -> Dict:
+        """Create fallback rule-based layout if diffusion not available"""
         
-        # Apply size multiplier
-        size_prefs = learned_prefs.get('size_preferences', {})
-        multiplier = size_prefs.get('global_multiplier', 1.0)
+        from architectural_layout_generator import ArchitecturalLayoutGenerator
         
-        if multiplier != 1.0:
-            print(f"  Adjusting room sizes by {multiplier:.2f}x (learned from model)")
-            for room in layout_spec.get('rooms', []):
-                room['width'] = round(room.get('width', 10) * multiplier, 1)
-                room['height'] = round(room.get('height', 10) * multiplier, 1)
+        # Use architectural generator as fallback
+        arch_gen = ArchitecturalLayoutGenerator()
         
-        # Apply adjacency preferences
-        adj_prefs = learned_prefs.get('adjacency_preferences', [])
-        if adj_prefs:
-            print(f"  Applying {len(adj_prefs)} learned adjacency patterns")
-            existing_adj = layout_spec.get('adjacency_requirements', [])
-            
-            # Merge learned adjacencies
-            for learned_adj in adj_prefs:
-                # Check if not already specified
-                exists = any(
-                    a.get('room1') == learned_adj['room1'] and 
-                    a.get('room2') == learned_adj['room2']
-                    for a in existing_adj
-                )
-                if not exists:
-                    existing_adj.append({
-                        'room1': learned_adj['room1'],
-                        'room2': learned_adj['room2'],
-                        'connection': learned_adj['connection'],
-                        'learned': True
-                    })
-            
-            layout_spec['adjacency_requirements'] = existing_adj
+        # Create simple description
+        desc = f"{room_info['num_bedrooms']}BHK apartment"
         
-        # Apply style preferences
-        style_prefs = learned_prefs.get('style_preferences', {})
-        if style_prefs:
-            layout_spec.setdefault('metadata', {})
-            layout_spec['metadata']['learned_style'] = style_prefs
-        
-        return layout_spec
+        return arch_gen.generate_layout_from_text(desc)
 
 
-# Example usage
+# Main execution
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Hybrid Floor Plan Generation")
+    parser = argparse.ArgumentParser(
+        description="True Hybrid Floor Plan Generation - Uses Diffusion Model for Real!"
+    )
     parser.add_argument('description', type=str, help='Floor plan description')
-    parser.add_argument('--model_path', type=str, default=None,
-                       help='Path to trained model (optional)')
-    parser.add_argument('--output_dir', type=str, default='./hybrid_outputs',
+    parser.add_argument('--model_path', type=str, 
+                       default="runwayml/stable-diffusion-v1-5",
+                       help='Stable Diffusion model path')
+    parser.add_argument('--lora_path', type=str, default=None,
+                       help='Path to LoRA weights')
+    parser.add_argument('--output_dir', type=str, default='./true_hybrid_outputs',
                        help='Output directory')
-    parser.add_argument('--formats', nargs='+', default=['png', 'dxf', 'svg'],
-                       help='Output formats')
-    parser.add_argument('--no_model', action='store_true',
-                       help='Disable model knowledge extraction')
+    parser.add_argument('--steps', type=int, default=30,
+                       help='Number of diffusion steps')
+    parser.add_argument('--no_diffusion', action='store_true',
+                       help='Disable diffusion, use only rules')
     
     args = parser.parse_args()
     
-    # Create hybrid system
-    system = HybridFloorPlanSystem(
+    # Create system
+    system = TrueHybridFloorPlanSystem(
         model_path=args.model_path,
-        use_model_knowledge=not args.no_model and args.model_path is not None
+        lora_path=args.lora_path,
+        use_diffusion=not args.no_diffusion
     )
     
     # Generate
     result = system.generate(
         description=args.description,
         output_dir=args.output_dir,
-        output_formats=args.formats
+        num_inference_steps=args.steps
     )

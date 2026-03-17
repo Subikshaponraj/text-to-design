@@ -1,0 +1,16 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Output folders
+hybrid_outputs/
+true_hybrid_outputs/
+geometric_outputs/
+demo_output/
+
+# Large model files
+*.safetensors
+
+# OS files
+.DS_Store
+Thumbs.db

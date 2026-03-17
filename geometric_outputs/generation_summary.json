@@ -1,13 +1,13 @@
 {
-  "description": "Compact 1BHK studio",
+  "description": "East facing house with puja room",
   "layout_spec": {
     "layout_type": "apartment",
     "rooms": [
       {
         "type": "living_room",
         "label": "Living Room",
-        "width": 12.8,
-        "height": 10.2,
+        "width": 15,
+        "height": 12,
         "position": {
           "x": 0,
           "y": 0
@@ -15,7 +15,7 @@
         "doors": [
           {
             "x": 0,
-            "y": 5.1,
+            "y": 6.0,
             "width": 3.0,
             "swing_angle": 90,
             "wall_side": "left"
@@ -23,8 +23,8 @@
         ],
         "windows": [
           {
-            "x": 6.4,
-            "y": 10.2,
+            "x": 7.5,
+            "y": 12,
             "width": 4.0,
             "height": 4.0,
             "wall_side": "top"
@@ -34,16 +34,16 @@
       {
         "type": "kitchen",
         "label": "Kitchen",
-        "width": 8.5,
-        "height": 6.8,
+        "width": 10,
+        "height": 8,
         "position": {
-          "x": 0,
-          "y": 10.7
+          "x": 15.5,
+          "y": 0
         },
         "doors": [
           {
-            "x": 0,
-            "y": 14.1,
+            "x": 15.5,
+            "y": 4.0,
             "width": 3.0,
             "swing_angle": 90,
             "wall_side": "left"
@@ -51,8 +51,8 @@
         ],
         "windows": [
           {
-            "x": 8.5,
-            "y": 14.1,
+            "x": 25.5,
+            "y": 4.0,
             "width": 3.0,
             "height": 3.0,
             "wall_side": "right"
@@ -62,16 +62,16 @@
       {
         "type": "master_bedroom",
         "label": "Master Bedroom",
-        "width": 11.9,
-        "height": 10.2,
+        "width": 14,
+        "height": 12,
         "position": {
           "x": 0,
-          "y": 18.0
+          "y": 12.5
         },
         "doors": [
           {
             "x": 0,
-            "y": 23.1,
+            "y": 18.5,
             "width": 3.0,
             "swing_angle": 90,
             "wall_side": "left"
@@ -79,8 +79,36 @@
         ],
         "windows": [
           {
-            "x": 6.0,
-            "y": 28.2,
+            "x": 7.0,
+            "y": 24.5,
+            "width": 4.0,
+            "height": 4.0,
+            "wall_side": "top"
+          }
+        ]
+      },
+      {
+        "type": "bedroom",
+        "label": "Bedroom 2",
+        "width": 12,
+        "height": 10,
+        "position": {
+          "x": 14.5,
+          "y": 12.5
+        },
+        "doors": [
+          {
+            "x": 14.5,
+            "y": 17.5,
+            "width": 3.0,
+            "swing_angle": 90,
+            "wall_side": "left"
+          }
+        ],
+        "windows": [
+          {
+            "x": 20.5,
+            "y": 22.5,
             "width": 4.0,
             "height": 4.0,
             "wall_side": "top"
@@ -90,16 +118,16 @@
       {
         "type": "bathroom",
         "label": "Bathroom 1",
-        "width": 6.0,
-        "height": 4.2,
+        "width": 7,
+        "height": 5,
         "position": {
-          "x": 12.4,
-          "y": 18.0
+          "x": 0,
+          "y": 25.0
         },
         "doors": [
           {
-            "x": 12.4,
-            "y": 20.1,
+            "x": 0,
+            "y": 27.5,
             "width": 3.0,
             "swing_angle": 90,
             "wall_side": "left"
@@ -107,8 +135,8 @@
         ],
         "windows": [
           {
-            "x": 15.4,
-            "y": 22.2,
+            "x": 3.5,
+            "y": 30.0,
             "width": 2.0,
             "height": 2.0,
             "wall_side": "top"
@@ -117,49 +145,74 @@
       }
     ],
     "metadata": {
-      "description": "compact 1bhk studio",
+      "description": "east facing house with puja room",
       "is_open_kitchen": false,
-      "is_compact": true
+      "is_compact": false
     }
   },
+  "validation": {
+    "is_valid": true,
+    "total_violations": 1,
+    "critical": 0,
+    "errors": 0,
+    "warnings": 1,
+    "corrections_applied": [],
+    "violations": [
+      {
+        "type": "adjacency",
+        "severity": "warning",
+        "message": "Master Bedroom should be adjacent to bathroom",
+        "affected_rooms": [
+          "Master Bedroom"
+        ]
+      }
+    ]
+  },
   "output_files": {
-    "png": "./geometric_outputs\\Compact_1BHK_studio.png",
-    "dxf": "./geometric_outputs\\Compact_1BHK_studio.dxf",
-    "svg": "./geometric_outputs\\Compact_1BHK_studio.svg",
+    "png": "./geometric_outputs\\East_facing_house_with_puja_room.png",
+    "dxf": "./geometric_outputs\\East_facing_house_with_puja_room.dxf",
+    "svg": "./geometric_outputs\\East_facing_house_with_puja_room.svg",
     "json": "./geometric_outputs\\layout_specification.json"
   },
   "statistics": {
-    "total_rooms": 4,
-    "total_area_sqft": 334.94,
-    "total_walls": 16,
+    "total_rooms": 5,
+    "total_area_sqft": 583,
+    "total_walls": 20,
     "room_breakdown": [
       {
         "label": "Living Room",
         "type": "living_room",
-        "width_ft": 12.8,
-        "height_ft": 10.2,
-        "area_sqft": 130.56
+        "width_ft": 15,
+        "height_ft": 12,
+        "area_sqft": 180
       },
       {
         "label": "Kitchen",
         "type": "kitchen",
-        "width_ft": 8.5,
-        "height_ft": 6.8,
-        "area_sqft": 57.8
+        "width_ft": 10,
+        "height_ft": 8,
+        "area_sqft": 80
       },
       {
         "label": "Master Bedroom",
         "type": "master_bedroom",
-        "width_ft": 11.9,
-        "height_ft": 10.2,
-        "area_sqft": 121.38
+        "width_ft": 14,
+        "height_ft": 12,
+        "area_sqft": 168
+      },
+      {
+        "label": "Bedroom 2",
+        "type": "bedroom",
+        "width_ft": 12,
+        "height_ft": 10,
+        "area_sqft": 120
       },
       {
         "label": "Bathroom 1",
         "type": "bathroom",
-        "width_ft": 6.0,
-        "height_ft": 4.2,
-        "area_sqft": 25.200000000000003
+        "width_ft": 7,
+        "height_ft": 5,
+        "area_sqft": 35
       }
     ]
   }

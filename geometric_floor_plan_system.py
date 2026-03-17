@@ -11,6 +11,7 @@ import argparse
 
 from layout_spec_parser import LayoutParser, create_layout_from_description
 from geometric_layout_generator import GeometricFloorPlanGenerator
+from constraint_engine import ConstraintEngine, validate_layout
 try:
     from enhanced_png_renderer import EnhancedGeometricFloorPlanGenerator
     HAS_PNG_SUPPORT = True
@@ -83,16 +84,57 @@ class GeometricFloorPlanSystem:
         for room in layout_spec['rooms']:
             print(f"    • {room['label']}: {room['width']}' x {room['height']}'")
         
-        # Save specification if requested
+        # Step 2: CONSTRAINT ENGINE - Validate and correct layout
+        print("\nSTEP 2: Constraint Engine - Validating Layout")
+        print("-" * 40)
+        
+        engine = ConstraintEngine(
+            max_iterations=10,
+            auto_correct=True,
+            strict_mode=False
+        )
+        
+        is_valid, corrected_spec, violations = engine.validate_and_correct(layout_spec)
+        
+        # Update specification with corrections
+        layout_spec = corrected_spec
+        
+        # Create validation report
+        validation_report = {
+            'is_valid': is_valid,
+            'total_violations': len(violations),
+            'critical': sum(1 for v in violations if v.severity.value == 'critical'),
+            'errors': sum(1 for v in violations if v.severity.value == 'error'),
+            'warnings': sum(1 for v in violations if v.severity.value == 'warning'),
+            'corrections_applied': engine.corrections_applied,
+            'violations': [
+                {
+                    'type': v.type.value,
+                    'severity': v.severity.value,
+                    'message': v.message,
+                    'affected_rooms': v.affected_rooms
+                }
+                for v in violations
+            ]
+        }
+        
+        # Save validation report
+        if 'json' in output_formats:
+            validation_path = os.path.join(output_dir, f"{description.replace(' ', '_')[:40]}_validation.json")
+            with open(validation_path, 'w') as f:
+                json.dump(validation_report, f, indent=2)
+            print(f"✓ Validation report saved: {validation_path}")
+        
+        # Save corrected specification
         spec_path = None
         if save_spec or 'json' in output_formats:
             spec_path = os.path.join(output_dir, "layout_specification.json")
             with open(spec_path, 'w') as f:
                 json.dump(layout_spec, f, indent=2)
-            print(f"\n✓ Specification saved: {spec_path}")
+            print(f"✓ Corrected specification saved: {spec_path}")
         
-        # Step 2: Create geometric layout
-        print("\nSTEP 2: Creating Geometric Layout")
+        # Step 3: Create geometric layout
+        print("\nSTEP 3: Creating Geometric Layout")
         print("-" * 40)
         
         self.generator.parse_layout_specification(layout_spec)
@@ -102,8 +144,8 @@ class GeometricFloorPlanSystem:
         print(f"  - Total area: {total_area:.0f} sq ft")
         print(f"  - Total walls: {len(self.generator.walls)}")
         
-        # Step 3: Export to requested formats
-        print(f"\nSTEP 3: Exporting to Formats {output_formats}")
+        # Step 4: Export to requested formats
+        print(f"\nSTEP 4: Exporting to Formats {output_formats}")
         print("-" * 40)
         
         output_paths = {}
@@ -138,13 +180,14 @@ class GeometricFloorPlanSystem:
         if spec_path:
             output_paths['json'] = spec_path
         
-        # Step 4: Create summary
-        print("\nSTEP 4: Creating Summary")
+        # Step 5: Create summary
+        print("\nSTEP 5: Creating Summary")
         print("-" * 40)
         
         summary = {
             'description': description,
             'layout_spec': layout_spec,
+            'validation': validation_report,
             'output_files': output_paths,
             'statistics': {
                 'total_rooms': len(self.generator.rooms),

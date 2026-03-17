@@ -4,8 +4,8 @@
     {
       "type": "living_room",
       "label": "Living Room",
-      "width": 12.8,
-      "height": 10.2,
+      "width": 15,
+      "height": 12,
       "position": {
         "x": 0,
         "y": 0
@@ -13,7 +13,7 @@
       "doors": [
         {
           "x": 0,
-          "y": 5.1,
+          "y": 6.0,
           "width": 3.0,
           "swing_angle": 90,
           "wall_side": "left"
@@ -21,8 +21,8 @@
       ],
       "windows": [
         {
-          "x": 6.4,
-          "y": 10.2,
+          "x": 7.5,
+          "y": 12,
           "width": 4.0,
           "height": 4.0,
           "wall_side": "top"
@@ -32,16 +32,16 @@
     {
       "type": "kitchen",
       "label": "Kitchen",
-      "width": 8.5,
-      "height": 6.8,
+      "width": 10,
+      "height": 8,
       "position": {
-        "x": 0,
-        "y": 10.7
+        "x": 15.5,
+        "y": 0
       },
       "doors": [
         {
-          "x": 0,
-          "y": 14.1,
+          "x": 15.5,
+          "y": 4.0,
           "width": 3.0,
           "swing_angle": 90,
           "wall_side": "left"
@@ -49,8 +49,8 @@
       ],
       "windows": [
         {
-          "x": 8.5,
-          "y": 14.1,
+          "x": 25.5,
+          "y": 4.0,
           "width": 3.0,
           "height": 3.0,
           "wall_side": "right"
@@ -60,16 +60,16 @@
     {
       "type": "master_bedroom",
       "label": "Master Bedroom",
-      "width": 11.9,
-      "height": 10.2,
+      "width": 14,
+      "height": 12,
       "position": {
         "x": 0,
-        "y": 18.0
+        "y": 12.5
       },
       "doors": [
         {
           "x": 0,
-          "y": 23.1,
+          "y": 18.5,
           "width": 3.0,
           "swing_angle": 90,
           "wall_side": "left"
@@ -77,8 +77,36 @@
       ],
       "windows": [
         {
-          "x": 6.0,
-          "y": 28.2,
+          "x": 7.0,
+          "y": 24.5,
+          "width": 4.0,
+          "height": 4.0,
+          "wall_side": "top"
+        }
+      ]
+    },
+    {
+      "type": "bedroom",
+      "label": "Bedroom 2",
+      "width": 12,
+      "height": 10,
+      "position": {
+        "x": 14.5,
+        "y": 12.5
+      },
+      "doors": [
+        {
+          "x": 14.5,
+          "y": 17.5,
+          "width": 3.0,
+          "swing_angle": 90,
+          "wall_side": "left"
+        }
+      ],
+      "windows": [
+        {
+          "x": 20.5,
+          "y": 22.5,
           "width": 4.0,
           "height": 4.0,
           "wall_side": "top"
@@ -88,16 +116,16 @@
     {
       "type": "bathroom",
       "label": "Bathroom 1",
-      "width": 6.0,
-      "height": 4.2,
+      "width": 7,
+      "height": 5,
       "position": {
-        "x": 12.4,
-        "y": 18.0
+        "x": 0,
+        "y": 25.0
       },
       "doors": [
         {
-          "x": 12.4,
-          "y": 20.1,
+          "x": 0,
+          "y": 27.5,
           "width": 3.0,
           "swing_angle": 90,
           "wall_side": "left"
@@ -105,8 +133,8 @@
       ],
       "windows": [
         {
-          "x": 15.4,
-          "y": 22.2,
+          "x": 3.5,
+          "y": 30.0,
           "width": 2.0,
           "height": 2.0,
           "wall_side": "top"
@@ -115,8 +143,8 @@
     }
   ],
   "metadata": {
-    "description": "compact 1bhk studio",
+    "description": "east facing house with puja room",
     "is_open_kitchen": false,
-    "is_compact": true
+    "is_compact": false
   }
 }
